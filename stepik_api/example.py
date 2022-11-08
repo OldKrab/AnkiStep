@@ -1,3 +1,5 @@
-from data_loader import load_course_steps
+from data_loader import DataLoader
 
-print(load_course_steps(64377))
+
+loader = DataLoader()
+print(loader.load_course_steps(64377))
