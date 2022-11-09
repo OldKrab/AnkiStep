@@ -1,3 +1,4 @@
+from stepik_api import consts
 from stepik_api.quiz_jsons import Quiz
 from stepik_api.consts import *
 from anki_connect_module.anki_connect_sender import AnkiConnectorSender

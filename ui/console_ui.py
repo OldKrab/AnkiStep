@@ -11,6 +11,7 @@ def main(args):
 
     try:
         api.authorize(args.client_id, args.client_secret, args.login, args.password)
+
         api.load_stepik_course(int(args.quiz_id))
         api.save_quizes_anki()
     except Exception as e:

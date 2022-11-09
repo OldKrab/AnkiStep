@@ -1,19 +1,33 @@
+from __future__ import annotations
+
 from html import entities
 import multiprocessing
 import requests
-from consts import *
-from quiz_jsons import Quiz
+
+from stepik_api.authorisation import OAuthStepik
+from stepik_api.consts import *
+from stepik_api.quiz_jsons import Quiz
 from joblib import Parallel, delayed
 
 
 class DataLoader:
-    _token = open("stepik_api/temp_token").read()
-    _user_headers = {'Authorization': 'Bearer {}'.format(
-        _token), "content-type": "application/json"}
+    # _token = open('stepik_api\\temp_token').read()
+    # _user_headers = {'Authorization': 'Bearer {}'.format(
+    #     _token), "content-type": "application/json"}
+
+    stepic_oauth = None
+
+    @classmethod
+    def set_loader(cls, stepic_oauth: OAuthStepik = None):
+        cls.stepic_oauth = stepic_oauth
+
+    @classmethod
+    def get_user_headers(cls):
+        return cls.stepic_oauth.get_headers()
 
     @classmethod
     def user_request(cls, request_url: str):
-        return requests.get(request_url, headers=cls._user_headers)
+        return requests.get(request_url, headers=cls.get_user_headers())
 
     @classmethod
     def request_entity(cls, request_url: str, id: int):
