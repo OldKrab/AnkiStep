@@ -13,6 +13,11 @@ SECTIONS = STEPIK_API_URL + "/sections/"
 
 UNITS = STEPIK_API_URL + "/units/"
 
+SUBMISSIONS = STEPIK_API_URL + "/submissions/"
+
+ATTEMPTS = STEPIK_API_URL + "/attempts/"
+ATTEMPTS_PK = ATTEMPTS + "{}"
+
 TYPE_CHOICE = "choice"
 TYPE_SORTING = "sorting"
 TYPE_MATCHING = "matching"
@@ -25,6 +30,5 @@ TYPE_STRING = "string"
 TYPE_FREE_ANSWER = "free-answer"
 TYPE_CODE = "code"
 TYPE_SQL = "sql"
-TYPE_TEXT = "text"
 
-SUPPORTED_TYPES = {TYPE_CHOICE, TYPE_TEXT, TYPE_NUMBER}
+SUPPORTED_TYPES = {TYPE_CHOICE, TYPE_STRING, TYPE_NUMBER}
