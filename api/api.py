@@ -1,5 +1,6 @@
 
 from anki_connect_module.anki_connect_sender import AnkiConnectorSender
+from converter import convert
 from stepik_api.authorisation import OAuthStepik
 from stepik_api.data_loader import DataLoader
 
@@ -19,4 +20,5 @@ class AnkiStepAPI:
         self.stepik_quizes = self.loader.load_quizes(quiz_id)
 
     def save_quizes_anki(self):
-        pass
+        self.anki_connect_sender.add_notes([convert(q) for q in self.stepik_quizes])
+
