@@ -1,6 +1,6 @@
 
 from anki_connect_module.anki_connect_sender import AnkiConnectorSender
-from converter import convert
+from quiz_converter.converter import convert
 from stepik_api.authorisation import OAuthStepik
 from stepik_api.data_loader import DataLoader
 
