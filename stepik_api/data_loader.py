@@ -15,7 +15,6 @@ class DataLoader:
     # _user_headers = {'Authorization': 'Bearer {}'.format(
     #     _token), "content-type": "application/json"}
 
-    stepic_oauth = None
     __headers = None
     @classmethod
     def set_headers(cls, headers):
