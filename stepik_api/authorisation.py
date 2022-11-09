@@ -5,7 +5,7 @@ import json
 import requests
 
 
-class OAuthStepic:
+class OAuthStepik:
     __user_data_filename = 'user_data.json'
     __grand_type = 'client_credentials'
 
