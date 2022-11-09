@@ -1,8 +1,8 @@
 from html import entities
 import multiprocessing
 import requests
-from consts import *
-from quiz_jsons import Quiz
+from stepik_api.consts import *
+from stepik_api.quiz_jsons import Quiz
 from joblib import Parallel, delayed
 
 
@@ -108,7 +108,7 @@ class DataLoader:
         num_cores = multiprocessing.cpu_count()
         course = cls.load_course(course_id)
 
-        sections, units, lessons = Parallel(n_jobs=num_cores)((
+        sections, units, lessons = Parallel(n_jobs=3)((
             delayed(cls.load_course_sections)(course),
             delayed(cls.load_course_units)(course_id),
             delayed(cls.load_course_lessons)(course_id)))  # type: ignore
@@ -134,7 +134,7 @@ class DataLoader:
 
         quizes = []
 
-        def calc_stuff(i: int):
+        def calc_for_step(i: int):
             step_id = steps[i]["id"]
             sub = cls.request_correct_submission(step_id)
             if (sub == None):
@@ -147,7 +147,7 @@ class DataLoader:
             return Quiz(
                 steps[i], sub, attempt, course["title"], steps_lessons[i]["title"], steps_sections[i]["title"])
 
-        quizes = Parallel(n_jobs=num_cores)(delayed(calc_stuff)(i)
+        quizes = Parallel(n_jobs=min(num_cores, len(steps)))(delayed(calc_for_step)(i)
                                             for i in range(len(steps)))
         quizes = filter(lambda o: o is not None, quizes)
-        return quizes
+        return list(quizes)
