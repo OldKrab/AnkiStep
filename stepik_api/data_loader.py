@@ -1,32 +1,19 @@
-from __future__ import annotations
-
 from html import entities
 import multiprocessing
 import requests
-
-from stepik_api.authorisation import OAuthStepik
 from stepik_api.consts import *
 from stepik_api.quiz_jsons import Quiz
 from joblib import Parallel, delayed
 
 
 class DataLoader:
-    # _token = open('stepik_api\\temp_token').read()
-    # _user_headers = {'Authorization': 'Bearer {}'.format(
-    #     _token), "content-type": "application/json"}
-
-    __headers = None
-    @classmethod
-    def set_headers(cls, headers):
-        cls.__headers = headers
-
-    @classmethod
-    def get_user_headers(cls):
-        return cls.__headers
+    _token = open("stepik_api/temp_token").read()
+    _user_headers = {'Authorization': 'Bearer {}'.format(
+        _token), "content-type": "application/json"}
 
     @classmethod
     def user_request(cls, request_url: str):
-        return requests.get(request_url, headers=cls.get_user_headers())
+        return requests.get(request_url, headers=cls._user_headers)
 
     @classmethod
     def request_entity(cls, request_url: str, id: int):
@@ -121,7 +108,7 @@ class DataLoader:
         num_cores = multiprocessing.cpu_count()
         course = cls.load_course(course_id)
 
-        sections, units, lessons = Parallel(n_jobs=num_cores)((
+        sections, units, lessons = Parallel(n_jobs=3)((
             delayed(cls.load_course_sections)(course),
             delayed(cls.load_course_units)(course_id),
             delayed(cls.load_course_lessons)(course_id)))  # type: ignore
@@ -147,7 +134,7 @@ class DataLoader:
 
         quizes = []
 
-        def calc_stuff(i: int):
+        def calc_for_step(i: int):
             step_id = steps[i]["id"]
             sub = cls.request_correct_submission(step_id)
             if (sub == None):
@@ -160,7 +147,7 @@ class DataLoader:
             return Quiz(
                 steps[i], sub, attempt, course["title"], steps_lessons[i]["title"], steps_sections[i]["title"])
 
-        quizes = Parallel(n_jobs=num_cores)(delayed(calc_stuff)(i)
+        quizes = Parallel(n_jobs=min(num_cores, len(steps)))(delayed(calc_for_step)(i)
                                             for i in range(len(steps)))
         quizes = filter(lambda o: o is not None, quizes)
-        return quizes
+        return list(quizes)
