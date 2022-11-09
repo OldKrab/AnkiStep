@@ -19,9 +19,13 @@ def choice_formatter(dataset, result):
         options = "Выберите несколько вариантов из списка: "
     else: 
         options = "Выберите один вариант из списка: "
+        options += "<p>"
     for i in range(len(dataset['options'])):
-        options += "\n" + str(i + 1) + dataset['options'][i]
-    answer = ["\n" + str(i + 1) + "." + dataset['options'][i] for i in range(len(result)) if result[i]]
+        options += "<p>" + str(i + 1) + ". " + dataset['options'][i]
+    answer = ""
+    for i in range(len(result)) :
+        if result[i]:
+            answer += "<p>" + str(i + 1) + ". " + dataset['options'][i]
     return options, answer
     
 def convert_choice(quiz: Quiz):
