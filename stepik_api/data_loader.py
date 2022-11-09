@@ -1,7 +1,9 @@
 from html import entities
+import multiprocessing
 import requests
 from consts import *
 from quiz_jsons import Quiz
+from joblib import Parallel, delayed
 
 
 class DataLoader:
@@ -68,49 +70,53 @@ class DataLoader:
 
     @classmethod
     def load_course_sections(cls, course: dict) -> list[dict]:
-        print("load sections of course")
-        return cls.request_entities_by_ids(course["sections"], SECTIONS, "sections")
+        sections = cls.request_entities_by_ids(
+            course["sections"], SECTIONS, "sections")
+        print("loaded sections of course")
+        return sections
 
     @classmethod
     def load_course_units(cls, course_id: int) -> list[dict]:
-        print("load units of course")
         units = cls.request_entities(UNITS, {"course": course_id}, "units")
+        print("loaded units of course")
         return units
 
     @classmethod
     def load_course_lessons(cls, course_id: int) -> list[dict]:
-        print("load lessons of course")
         lessons = cls.request_entities(
             LESSONS, {"course": course_id}, "lessons")
+        print("loaded lessons of course")
+
         return lessons
 
     @classmethod
     def load_course(cls, course_id: int) -> dict:
-        print('load course with id {}'.format(course_id))
         course = cls.request_course(course_id)
+        print('loaded course with id {}'.format(course_id))
         return course
 
     @classmethod
     def load_lessons_steps(cls, lessons: list[dict]) -> list[dict]:
-        print("load steps of lessons")
         steps_ids = [
             step_id for lesson in lessons for step_id in lesson["steps"]]
         steps = cls.request_entities_by_ids(steps_ids, STEPS, "steps")
+        print("loaded steps of lessons")
         return steps
 
     @classmethod
     def load_quizes(cls, course_id) -> list[Quiz]:
+        num_cores = multiprocessing.cpu_count()
         course = cls.load_course(course_id)
-        sections = cls.load_course_sections(course)
-        units = cls.load_course_units(course_id)
-        lessons = cls.load_course_lessons(course_id)
+
+        sections, units, lessons = Parallel(n_jobs=num_cores)((
+            delayed(cls.load_course_sections)(course),
+            delayed(cls.load_course_units)(course_id),
+            delayed(cls.load_course_lessons)(course_id)))  # type: ignore
         steps = cls.load_lessons_steps(lessons)
         steps = cls.filter_supported_steps(steps)
 
         lessons_index = {lessons[i]["id"]: i for i in range(len(lessons))}
         sections_index = {sections[i]["id"]: i for i in range(len(sections))}
-        units_index = {units[i]["id"]: i for i in range(len(units))}
-        steps_index = {steps[i]["id"]: i for i in range(len(steps))}
 
         lessons_units_index = [0] * len(lessons)
         for i in range(len(units)):
@@ -127,16 +133,21 @@ class DataLoader:
                           for sections_id in steps_sections_ids]
 
         quizes = []
-        for i in range(len(steps)):
+
+        def calc_stuff(i: int):
             step_id = steps[i]["id"]
-
-            print("load submission and attempt for {}'th step in lesson \"{}\"".format(
-                steps[i]["position"], steps_lessons[i]["title"]))
-
             sub = cls.request_correct_submission(step_id)
             if (sub == None):
-                continue
+                return None
             attempt = cls.request_attempt(sub["attempt"])
-            quizes.append(Quiz(
-                steps[i], sub, attempt, course["title"], steps_lessons[i]["title"], steps_sections[i]["title"]))
+
+            print("loaded submission and attempt for {}'th step in lesson \"{}\"".format(
+                steps[i]["position"], steps_lessons[i]["title"]))
+
+            return Quiz(
+                steps[i], sub, attempt, course["title"], steps_lessons[i]["title"], steps_sections[i]["title"])
+
+        quizes = Parallel(n_jobs=num_cores)(delayed(calc_stuff)(i)
+                                            for i in range(len(steps)))
+        quizes = filter(lambda o: o is not None, quizes)
         return quizes
