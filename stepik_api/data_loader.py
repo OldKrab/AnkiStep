@@ -118,15 +118,11 @@ def load_quizes(user_headers, course_id) -> list[Quiz]:
     num_cores = multiprocessing.cpu_count()
     course = load_course(user_headers, course_id)
 
-    # sections, units, lessons = Parallel(n_jobs=3)((
-    #     delayed(load_course_sections)(user_headers, course),
-    #     delayed(load_course_units)(user_headers, course_id),
-    #     delayed(load_course_lessons)(user_headers, course_id)))  # type: ignore
+    sections, units, lessons = Parallel(n_jobs=3)((
+        delayed(load_course_sections)(user_headers, course),
+        delayed(load_course_units)(user_headers, course_id),
+        delayed(load_course_lessons)(user_headers, course_id)))  # type: ignore
 
-    sections, units, lessons = (
-        load_course_sections(user_headers, course),
-        load_course_units(user_headers, course_id),
-        load_course_lessons(user_headers, course_id))  # type: ignore
     steps = load_lessons_steps(user_headers, lessons)
     steps = filter_supported_steps(steps)
     if len(steps) == 0:
