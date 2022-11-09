@@ -18,7 +18,7 @@ class AnkiStepAPI:
     def authorize(self, client_id: str, client_secret: str, username: str = None, password: str = None):
         self.stepic_oauth.set_credentials(client_id, client_secret, username)
         self.stepic_oauth.auth_user_password(password)
-        self.loader.set_headers(self.stepic_oauth.get_headers())
+        self.loader.set_loader(self.stepic_oauth)
 
     def load_stepik_course(self, quiz_id):
         self.stepik_quizes = self.loader.load_quizes(quiz_id)
