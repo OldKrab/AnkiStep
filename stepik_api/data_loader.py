@@ -61,8 +61,8 @@ class DataLoader:
         print('begin load course "{}"'.format(course["title"]))
 
         return [step
-                for section in cls.request_entities(course["sections"], SECTIONS, "sections")[0:1]
-                for unit in cls.request_entities(section["units"], UNITS, "units")[0:1]
+                for section in cls.request_entities(course["sections"], SECTIONS, "sections")
+                for unit in cls.request_entities(section["units"], UNITS, "units")
                 for step in cls.request_entities(cls.request_lesson(unit["lesson"])["steps"], STEPS, "steps")]
 
     @classmethod
