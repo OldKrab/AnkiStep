@@ -34,12 +34,14 @@ def request_entities(user_headers, request_url, url_params: dict, field_name) ->
 
 
 def request_entities_by_ids(user_headers, ids, request_url, field_name):
-    entities = []
-    batch_size = 100
-    for i in range(0, len(ids), batch_size):
-        cur_ids = ids[i:i+batch_size]
-        entities += request_entities(user_headers,
-                                     request_url, {"ids[]": "&ids[]=".join(map(str, cur_ids))}, field_name)
+    batch_size = 20
+    entities = Parallel(n_jobs=len(ids) // batch_size + 1)(
+        delayed(request_entities)(
+            user_headers, request_url, {"ids[]": "&ids[]=".join(map(str, ids[i:i+batch_size]))}, field_name)
+        for i in range(0, len(ids), batch_size))
+    if (entities is None):
+        return []
+    entities = [e for ee in entities for e in ee]
     return entities
 
 
@@ -147,7 +149,7 @@ def load_quizes(user_headers, course_id) -> list[Quiz]:
 
     quizes = []
 
-    quizes = Parallel(n_jobs=min(num_cores, len(steps)))(
+    quizes = Parallel(n_jobs=min(50, len(steps)))(
         delayed(load_step_submission_and_attempt)(
             user_headers, steps, i, course, steps_lessons, steps_sections)
         for i in range(len(steps)))
