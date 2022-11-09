@@ -16,14 +16,14 @@ class DataLoader:
     #     _token), "content-type": "application/json"}
 
     stepic_oauth = None
-
+    __headers = None
     @classmethod
-    def set_loader(cls, stepic_oauth: OAuthStepik = None):
-        cls.stepic_oauth = stepic_oauth
+    def set_headers(cls, headers):
+        cls.__headers = headers
 
     @classmethod
     def get_user_headers(cls):
-        return cls.stepic_oauth.get_headers()
+        return cls.__headers
 
     @classmethod
     def user_request(cls, request_url: str):
