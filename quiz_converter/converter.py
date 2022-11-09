@@ -28,9 +28,9 @@ def convert_choice(quiz: Quiz):
     return question, answer
 
 converters = {
-    consts.TYPE_NUMBER: convert_simple,
-    consts.TYPE_STRING: convert_simple,
-    consts.TYPE_CHOICE: convert_choice,
+    TYPE_NUMBER: convert_simple,
+    TYPE_STRING: convert_simple,
+    TYPE_CHOICE: convert_choice,
 }
 
 # convert step into anki with types
@@ -42,3 +42,4 @@ def convert(quiz):
         "modelName": "Basic",
         "fields": {"Front": question, "Back": answer},
     }
+

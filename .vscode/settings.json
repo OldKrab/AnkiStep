@@ -1,7 +1,0 @@
-{
-    "cSpell.words": [
-        "consts"
-    ],
-    "python.envFile": "${workspaceFolder}/.env"
-    
-}
