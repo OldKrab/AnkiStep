@@ -4,14 +4,20 @@ from anki_connect_module.anki_connect_sender import AnkiConnectorSender
 
 HARD_DECK = "duck"
 
-def convert_number(quiz):
+def convert_simple_answer(quiz, type):
     question = quiz.step["block"]["text"] 
-    answer = quiz.answer["number"]
+    answer = quiz.answer[type]
     return question, answer
 
+def convert_number(quiz):
+    return convert_simple_answer(quiz, "number")
+
 def convert_string(quiz):
+    return convert_simple_answer(quiz, "text")
+
+def convert_math(quiz):
     question = quiz.step["block"]["text"] 
-    answer = quiz.answer["text"]
+    answer = "<anki-mathjax>" + quiz.answer["formula"] + "</anki-mathjax>"
     return question, answer
 
 def choice_formatter(dataset, result):
@@ -37,6 +43,7 @@ converters = {
     TYPE_NUMBER: convert_number,
     TYPE_STRING: convert_string,
     TYPE_CHOICE: convert_choice,
+    TYPE_MATH: convert_math
 }
 
 # convert step into anki with types
