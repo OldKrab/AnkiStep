@@ -4,9 +4,14 @@ from anki_connect_module.anki_connect_sender import AnkiConnectorSender
 
 HARD_DECK = "duck"
 
-def convert_simple(quiz):
+def convert_number(quiz):
     question = quiz.step["block"]["text"] 
-    answer = quiz.answer[quiz.type]
+    answer = quiz.answer["number"]
+    return question, answer
+
+def convert_string(quiz):
+    question = quiz.step["block"]["text"] 
+    answer = quiz.answer["text"]
     return question, answer
 
 def choice_formatter(dataset, result):
@@ -16,27 +21,24 @@ def choice_formatter(dataset, result):
         options = "Выберите один вариант из списка: "
     for i in range(len(dataset['options'])):
         options += "\n" + str(i + 1) + dataset['options'][i]
-    answer = ["\n" + str(i + 1) + "." + x for i, x in enumerate(result) if x]
+    answer = ["\n" + str(i + 1) + "." + dataset['options'][i] for i in range(len(result)) if result[i]]
     return options, answer
     
-    #doto this
-    
 def convert_choice(quiz: Quiz):
-    options, answer = choice_formatter(quiz.attempt['dataset'], quiz.answer['reply']['choices'])
+    options, answer = choice_formatter(quiz.attempt['dataset'], quiz.answer['choices'])
     question = quiz.step["block"]["text"] + '\n' + options 
-    answer = quiz.answer[quiz.type]
     return question, answer
 
 converters = {
-    TYPE_NUMBER: convert_simple,
-    TYPE_STRING: convert_simple,
+    TYPE_NUMBER: convert_number,
+    TYPE_STRING: convert_string,
     TYPE_CHOICE: convert_choice,
 }
 
 # convert step into anki with types
 # return map with structure as a note
 def convert(quiz):
-    question, answer = converters[quiz.type]
+    question, answer = converters[quiz.type](quiz)
     return {
         "deckName": HARD_DECK,
         "modelName": "Basic",
