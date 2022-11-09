@@ -7,3 +7,6 @@ class Quiz:
         self.step = step
         self.submission = submission
         self.attempt = attempt
+        self.type = step['block']['name']
+        self.options = step['block']['options']
+        self.answer = submission['reply']
