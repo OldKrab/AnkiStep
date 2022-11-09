@@ -12,6 +12,9 @@ class AnkiStepAPI:
     stepik_quizes = None
     anki_notes = None
 
+    def __init__(self):
+        self.anki_connect_sender.get_profile_of_user()
+
     def authorize(self, client_id: str, client_secret: str, username: str = None, password: str = None):
         self.stepic_oauth.set_credentials(client_id, client_secret, username)
         self.stepic_oauth.auth_user_password(password)
