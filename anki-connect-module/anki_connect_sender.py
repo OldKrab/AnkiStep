@@ -80,6 +80,10 @@ class AnkiConnectorSender:
         return cls.invoke('deckNames')
 
     @classmethod
+    def is_deck_exist(cls, deck_name):
+        return deck_name in cls.get_deck_names()
+
+    @classmethod
     def get_deck_names_of_cards_ids(cls, cards_ids: list):
         return cls.invoke('getDecks', cards=cards_ids)
 
