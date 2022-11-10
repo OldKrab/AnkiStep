@@ -54,5 +54,6 @@ def convert(quiz):
         "deckName": HARD_DECK,
         "modelName": "Basic",
         "fields": {"Front": question, "Back": answer},
+        "options": {"allowDuplicate": True}
     }
 

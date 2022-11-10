@@ -1,4 +1,3 @@
-
 from anki_connect_module.anki_connect_sender import AnkiConnectorSender
 from quiz_converter.converter import convert
 from stepik_api.authorisation import OAuthStepik
@@ -22,5 +21,9 @@ class AnkiStepAPI:
         self.stepik_quizes = load_quizes(self.stepic_oauth.get_headers(), quiz_id)
 
     def save_quizes_anki(self):
-        self.anki_connect_sender.add_notes([convert(q) for q in self.stepik_quizes])
+        cards = [convert(q) for q in self.stepik_quizes]
+        self.anki_connect_sender.delete_decks([c['deckName'] for c in cards], True)
 
+        for c in cards:
+            self.anki_connect_sender.create_deck(c['deckName'])
+        self.anki_connect_sender.add_notes(cards)

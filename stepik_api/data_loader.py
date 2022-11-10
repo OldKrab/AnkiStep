@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from html import entities
 import multiprocessing
 import requests
