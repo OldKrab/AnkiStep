@@ -2,12 +2,13 @@
 
 import datetime
 import json
+import os
 from pathlib import Path
 import requests
 
 
 class OAuthStepik:
-    __user_data_folder = '~/.config/ankistep/'
+    __user_data_folder = os.environ['HOME'] + '/.config/ankistep/'
     __user_data_filename = '.user_data.json'
     __grand_type = 'client_credentials'
 
