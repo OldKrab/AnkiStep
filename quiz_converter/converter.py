@@ -20,16 +20,16 @@ def convert_math(quiz):
 
 def choice_formatter(dataset, result):
     if dataset['is_multiple_choice']:
-        options = "Выберите несколько вариантов из списка: "
+        options = "<br><strong>Выберите несколько вариантов из списка: </strong>"
     else: 
-        options = "Выберите один вариант из списка: "
-        options += "<p>"
+        options = "<br><strong>Выберите один вариант из списка: </strong>"
+        options += "<br>"
     for i in range(len(dataset['options'])):
-        options += "<p>" + str(i + 1) + ". " + dataset['options'][i]
+        options += "<br>" + str(i + 1) + ". " + dataset['options'][i]
     answer = ""
     for i in range(len(result)) :
         if result[i]:
-            answer += "<p>" + str(i + 1) + ". " + dataset['options'][i]
+            answer += "<br>" + str(i + 1) + ". " + dataset['options'][i]
     return options, answer
     
 def convert_choice(quiz: Quiz):
