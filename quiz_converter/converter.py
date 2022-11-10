@@ -48,7 +48,7 @@ converters = {
 # return map with structure as a note
 def convert(quiz: Quiz):
     question, answer = converters[quiz.type](quiz)
-    deck_name = quiz.course_name + '::' + quiz.section_name + '::' + quiz.lesson_name
+    deck_name = quiz.course_name + '::' + quiz.lesson_name + '::' + quiz.section_name
     return {
         "deckName": deck_name,
         "modelName": "Basic",
