@@ -13,6 +13,12 @@
 
 ## Авторизация 
 
+Для авторизации создайте данные для oauth2 авторизации на [Stepik](https://stepik.org/oauth2/applications/):
+
+Client type: confidential, Authorization Grant Type: client-credentials. 
+
+Сохраните данные. Используйте client id и client secret для авторизации в приложении.
+
 ## Сборка 
 Для сборки под vscode ввести в консоли (в папке проекта)
 
