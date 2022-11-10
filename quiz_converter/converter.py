@@ -27,7 +27,7 @@ def choice_formatter(dataset, result):
     for i in range(len(dataset['options'])):
         options += "<br>" + str(i + 1) + ". " + dataset['options'][i]
     answer = ""
-    for i in range(len(result)) :
+    for i in range(len(result)):
         if result[i]:
             answer += "<br>" + str(i + 1) + ". " + dataset['options'][i]
     return options, answer
@@ -37,11 +37,21 @@ def convert_choice(quiz: Quiz):
     question = quiz.step["block"]["text"] + '\n' + options 
     return question, answer
 
+def convert_fill_blanks(quiz:Quiz):
+    a = quiz
+    return "q", "a"
+
+def convert_matching(quiz:Quiz):
+    a = quiz
+    return "q", "a"
+
 converters = {
     TYPE_NUMBER: convert_number,
     TYPE_STRING: convert_string,
     TYPE_CHOICE: convert_choice,
-    TYPE_MATH: convert_math
+    TYPE_MATH: convert_math, 
+    TYPE_FILL_BLANKS: convert_fill_blanks,
+    TYPE_MATCHING: convert_matching
 }
 
 # convert step into anki with types
