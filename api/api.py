@@ -3,8 +3,8 @@ from quiz_converter.converter import convert
 from stepik_api.authorisation import OAuthStepik
 from stepik_api.data_loader import load_quizes
 
-class AnkiStepAPI:
 
+class AnkiStepAPI:
     anki_connect_sender = AnkiConnectorSender()
     stepic_oauth = OAuthStepik()
     stepik_quizes = []
@@ -22,8 +22,13 @@ class AnkiStepAPI:
 
     def save_quizes_anki(self):
         cards = [convert(q) for q in self.stepik_quizes]
-        # self.anki_connect_sender.delete_decks([c['deckName'] for c in cards], True)
 
+        deck_names_to_add = set()
         for c in cards:
-            self.anki_connect_sender.create_deck(c['deckName'])
+            deck_names_to_add.add(c['deckName'])
+
+        self.anki_connect_sender.delete_decks(list(deck_names_to_add), True)
+        for d in deck_names_to_add:
+            self.anki_connect_sender.create_deck(d)
+
         self.anki_connect_sender.add_notes(cards)
