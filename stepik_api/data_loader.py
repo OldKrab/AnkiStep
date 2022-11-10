@@ -9,6 +9,13 @@ from stepik_api.quiz_jsons import Quiz
 from joblib import Parallel, delayed
 
 
+def printProgressBar(percent, prefix='', suffix='', length=50, fill='█', printEnd="\r"):
+    filledLength = int(length * percent)
+    percent = ("{0:." + str(1) + "f}").format(100 * percent)
+    bar = fill * filledLength + '-' * (length - filledLength)
+    print(f'\r{prefix} |{bar}| {percent}% {suffix}', end=printEnd)
+
+
 def user_request(user_headers, request_url: str):
     return requests.get(request_url, headers=user_headers)
 
@@ -71,51 +78,59 @@ def filter_supported_steps(steps: list[dict]) -> list[dict]:
 def load_course_sections(user_headers, course: dict) -> list[dict]:
     sections = request_entities_by_ids(user_headers,
                                        course["sections"], SECTIONS, "sections")
-    print("loaded sections of course")
+    print("sections of course loaded")
     return sections
 
 
 def load_course_units(user_headers, course_id: int) -> list[dict]:
     units = request_entities(user_headers, UNITS, {
                              "course": course_id}, "units")
-    print("loaded units of course")
+    print("units of course loaded")
     return units
 
 
 def load_course_lessons(user_headers, course_id: int) -> list[dict]:
     lessons = request_entities(user_headers,
                                LESSONS, {"course": course_id}, "lessons")
-    print("loaded lessons of course")
+    print("lessons of course loaded")
 
     return lessons
 
 
 def load_course(user_headers, course_id: int) -> dict:
+    print('load course with id {}'.format(course_id))
     course = request_course(user_headers, course_id)
-    print('loaded course with id {}'.format(course_id))
+    print('course loaded')
     return course
 
 
 def load_lessons_steps(user_headers, lessons: list[dict]) -> list[dict]:
+    print("load steps of lessons...")
     steps_ids = [
         step_id for lesson in lessons for step_id in lesson["steps"]]
     steps = request_entities_by_ids(user_headers, steps_ids, STEPS, "steps")
-    print("loaded steps of lessons")
+    print("steps of lessons loaded")
     return steps
 
 
-def load_step_submission_and_attempt(user_headers, steps, i, course, steps_lessons, steps_sections):
+def load_step_submission_and_attempt(user_headers, steps, i, course, steps_lessons, steps_sections, loaded_steps_count):
+    def increase_progress_bar():
+        loaded_steps_count[0] += 1
+        printProgressBar(loaded_steps_count[0] / len(steps), prefix="load steps submissions:", suffix="Complete")
+
     step_id = steps[i]["id"]
     sub = request_correct_submission(user_headers, step_id)
     if (sub == None):
+        increase_progress_bar()
         return None
     attempt = request_attempt(user_headers, sub["attempt"])
 
-    print("loaded submission and attempt for {}'th step in lesson \"{}\"".format(
-        steps[i]["position"], steps_lessons[i]["title"]))
-
+    increase_progress_bar()
     return Quiz(
         steps[i], sub, attempt, course["title"], steps_lessons[i]["title"], steps_sections[i]["title"])
+
+
+load_step_submission_and_attempt.count = 0
 
 
 def load_quizes(user_headers, course_id) -> list[Quiz]:
@@ -151,10 +166,12 @@ def load_quizes(user_headers, course_id) -> list[Quiz]:
 
     quizes = []
 
-    quizes = Parallel(n_jobs=min(50, len(steps)))(
+    loaded_steps_count = [0]
+    quizes = Parallel(n_jobs=min(50, len(steps)), require='sharedmem')(
         delayed(load_step_submission_and_attempt)(
-            user_headers, steps, i, course, steps_lessons, steps_sections)
+            user_headers, steps, i, course, steps_lessons, steps_sections, loaded_steps_count)
         for i in range(len(steps)))
+    print("\nsteps submissions loaded")
 
     quizes = filter(lambda o: o is not None, quizes)
     return list(quizes)
