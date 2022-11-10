@@ -39,7 +39,7 @@ def choice_formatter(dataset, result):
 
 def convert_choice(quiz: Quiz):
     options, answer = choice_formatter(quiz.attempt['dataset'], quiz.answer['choices'])
-    question = quiz.step["block"]["text"] + '\n' + options
+    question = quiz.step["block"]["text"] + "<br>" + options 
     return question, answer
 
 def convert_fill_blanks(quiz:Quiz):
@@ -80,13 +80,17 @@ def convert_matching(quiz: Quiz):
     return q, a
 
 
+def convert_random(quiz: Quiz):
+    question = quiz.step["block"]["text"] + " " + quiz.attempt['dataset']['task']
+    return question, quiz.answer["answer"]
+
 converters = {
     TYPE_NUMBER: convert_number,
     TYPE_STRING: convert_string,
     TYPE_CHOICE: convert_choice,
     TYPE_MATH: convert_math,
-    TYPE_FILL_BLANKS: convert_fill_blanks,
-    TYPE_MATCHING: convert_matching
+    TYPE_MATCHING: convert_matching, 
+    TYPE_RANDOM_TASKS: convert_random, 
 }
 
 
