@@ -66,5 +66,4 @@ def last_courses(count):
         error_and_exit(*e.args)
 
 
-if __name__ == "__main__":
-    cli()
+

@@ -2,19 +2,26 @@
 
 import datetime
 import json
+from pathlib import Path
 import requests
 
 
 class OAuthStepik:
-    __user_data_filename = 'user_data.json'
+    __user_data_folder = '~/.config/ankistep/'
+    __user_data_filename = '.user_data.json'
     __grand_type = 'client_credentials'
+
+    def get_user_file(self, *args):
+        path = Path(self.__user_data_folder)
+        path.mkdir(parents=True, exist_ok=True)
+        return open(self.__user_data_folder + self.__user_data_filename, *args)
 
     def __init__(self):
         self._read_user_data()
 
     def _read_user_data(self):
         try:
-            with open(self.__user_data_filename) as json_file:
+            with self.get_user_file() as json_file:
                 data = json.load(json_file)
         except FileNotFoundError:
             data = {}
@@ -24,10 +31,11 @@ class OAuthStepik:
         self.__token = data.get('token', '')
         self.__expiration = data.get('expiration', datetime.datetime.min)
         if not isinstance(self.__expiration, datetime.datetime):
-            self.__expiration = datetime.datetime.fromisoformat(str(self.__expiration))
+            self.__expiration = datetime.datetime.fromisoformat(
+                str(self.__expiration))
 
     def _save_user_data(self):
-        with open(self.__user_data_filename, 'w') as outfile:
+        with self.get_user_file('w') as outfile:
             user_data: dict = {}
             user_data['client_id'] = self._client_id
             user_data['client_secret'] = self._client_secret
@@ -43,7 +51,8 @@ class OAuthStepik:
     def auth_user_password(self):
         expiration = datetime.datetime.now()
 
-        auth = requests.auth.HTTPBasicAuth(self._client_id, self._client_secret)
+        auth = requests.auth.HTTPBasicAuth(
+            self._client_id, self._client_secret)
         data = {'grant_type': self.__grand_type}
         resp = requests.post(
             'https://stepik.org/oauth2/token/', data, auth=auth)
@@ -53,9 +62,9 @@ class OAuthStepik:
 
         resp = resp.json()
         self.__token = resp['access_token']
-        self.__expiration = expiration + datetime.timedelta(seconds=int(resp['expires_in']))
+        self.__expiration = expiration + \
+            datetime.timedelta(seconds=int(resp['expires_in']))
         self._save_user_data()
-
 
     def __get_headers(self):
         return {'Authorization': 'Bearer ' + self.__token, "content-type": "application/json"}
