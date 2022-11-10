@@ -3,6 +3,7 @@ from stepik_api.consts import *
 from anki_connect_module.anki_connect_sender import AnkiConnectorSender
 from sympy import core, latex
 
+
 def convert_simple_answer(quiz, type):
     question = quiz.step["block"]["text"]
     answer = quiz.answer[type]
@@ -18,8 +19,8 @@ def convert_string(quiz):
 
 
 def convert_math(quiz):
-    question = quiz.step["block"]["text"] 
-    answer = "<anki-mathjax>" + latex(core.sympify(quiz.answer["formula"], evaluate=False))  + "</anki-mathjax>"
+    question = quiz.step["block"]["text"]
+    answer = "<anki-mathjax>" + latex(core.sympify(quiz.answer["formula"], evaluate=False)) + "</anki-mathjax>"
     return question, answer
 
 
@@ -40,10 +41,11 @@ def choice_formatter(dataset, result):
 
 def convert_choice(quiz: Quiz):
     options, answer = choice_formatter(quiz.attempt['dataset'], quiz.answer['choices'])
-    question = quiz.step["block"]["text"] + "<br>" + options 
+    question = quiz.step["block"]["text"] + "<br>" + options
     return question, answer
 
-def convert_fill_blanks(quiz:Quiz):
+
+def convert_fill_blanks(quiz: Quiz):
     a = quiz
     return "q", "a"
 
@@ -77,6 +79,7 @@ def convert_matching(quiz: Quiz):
 
     return q, a
 
+
 def convert_sorting(quiz: Quiz):
     q = quiz.step["block"]["text"] + '\n'
 
@@ -103,14 +106,44 @@ def convert_random(quiz: Quiz):
     question = quiz.step["block"]["text"] + " " + quiz.attempt['dataset']['task']
     return question, quiz.answer["answer"]
 
+def make_select_html(question: dict, keys: dict):
+    res = question['text'] + ' '
+    res += "<select>"
+    for key in keys['options']:
+        res += F"<option> {key} </option>"
+    res += '</select>'
+    return res
+
+
+def convert_fill_blanks(quiz: Quiz):
+    question = quiz.step["block"]["text"] + ' \n'
+
+    data = quiz.attempt['dataset']['components']
+    for i in range(0, len(data), 2):
+        question += make_select_html(data[i], data[i+1]) + '\t '
+
+    answer = ""
+    for i in range(0, len(data), 2):
+        answer += data[i]['text'] + ' ' + quiz.answer["blanks"][i // 2] + '\t '
+
+    return question, answer
+
+def convert_free_answer(quiz: Quiz):
+    question = quiz.step["block"]["text"] + ' \n'
+    answer = quiz.answer['text']
+    return question, answer
+
+
 converters = {
     TYPE_NUMBER: convert_number,
     TYPE_STRING: convert_string,
     TYPE_CHOICE: convert_choice,
     TYPE_MATH: convert_math,
-    TYPE_MATCHING: convert_matching, 
+    TYPE_MATCHING: convert_matching,
     TYPE_RANDOM_TASKS: convert_random,
-    TYPE_SORTING: convert_sorting
+    TYPE_FILL_BLANKS: convert_fill_blanks,
+    TYPE_SORTING: convert_sorting,
+    TYPE_FREE_ANSWER: convert_free_answer,
 }
 
 
@@ -119,6 +152,7 @@ converters = {
 def convert(quiz: Quiz):
     question, answer = converters[quiz.type](quiz)
     question = "<center>" + question + "</center>"
+    answer = "<center>" + answer + "</center>"
     deck_name = quiz.course_name + '::' + quiz.lesson_name + '::' + quiz.section_name
     return {
         "deckName": deck_name,
