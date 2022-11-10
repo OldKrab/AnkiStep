@@ -70,12 +70,30 @@ def convert_matching(quiz: Quiz):
 
     answer = quiz.answer['ordering']
 
-    # keys = list(quiz.attempt['dataset']['pairs'].keys())
-    # values = list(quiz.attempt['dataset']['pairs'].values())
-
     a = "<table>"
     for i in range(len(keys)):
         a += make_html_row(keys[i], values[answer[i]])
+    a += "</table>"
+
+    return q, a
+
+def convert_sorting(quiz: Quiz):
+    q = quiz.step["block"]["text"] + '\n'
+
+    q += "<br><strong> Отсортируйте строки: </strong>"
+    q += "<table>"
+
+    values = []
+    for pair in quiz.attempt['dataset']['options']:
+        values.append(pair)
+        q += F"<tr>  <td>{pair}</td>  </tr>"
+    q += "</table>"
+
+    answer = quiz.answer['ordering']
+
+    a = "<table>"
+    for i in range(len(values)):
+        a += F"<tr>  <td>{values[answer[i]]}</td>  </tr>"
     a += "</table>"
 
     return q, a
@@ -91,7 +109,8 @@ converters = {
     TYPE_CHOICE: convert_choice,
     TYPE_MATH: convert_math,
     TYPE_MATCHING: convert_matching, 
-    TYPE_RANDOM_TASKS: convert_random, 
+    TYPE_RANDOM_TASKS: convert_random,
+    TYPE_SORTING: convert_sorting
 }
 
 
