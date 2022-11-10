@@ -5,10 +5,10 @@ import json
 import os
 from pathlib import Path
 import requests
-
+from appdirs import *
 
 class OAuthStepik:
-    __user_data_folder = os.environ['HOME'] + '/.config/ankistep/'
+    __user_data_folder = user_data_dir('ankistep')
     __user_data_filename = '.user_data.json'
     __grand_type = 'client_credentials'
 

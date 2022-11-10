@@ -10,7 +10,8 @@ setup(
         'click',
         'requests',
         'sympy', 
-        'joblib'
+        'joblib',
+        'appdirs'
     ],
     packages=find_packages(),
         entry_points = {
