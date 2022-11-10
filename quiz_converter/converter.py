@@ -19,7 +19,7 @@ def convert_string(quiz):
 
 def convert_math(quiz):
     question = quiz.step["block"]["text"] 
-    answer = "[$]" + latex(core.sympify(quiz.answer["formula"], evaluate=False)) + "[/$]"
+    answer = "<anki-mathjax>" + latex(core.sympify(quiz.answer["formula"], evaluate=False)) + "</anki-mathjax>"
     return question, answer
 
 
