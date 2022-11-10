@@ -1,6 +1,7 @@
 from stepik_api.quiz_jsons import Quiz
 from stepik_api.consts import *
 from anki_connect_module.anki_connect_sender import AnkiConnectorSender
+from sympy import core, latex
 
 def convert_simple_answer(quiz, type):
     question = quiz.step["block"]["text"]
@@ -17,8 +18,8 @@ def convert_string(quiz):
 
 
 def convert_math(quiz):
-    question = quiz.step["block"]["text"]
-    answer = "<anki-mathjax>" + quiz.answer["formula"] + "</anki-mathjax>"
+    question = quiz.step["block"]["text"] 
+    answer = "[$]" + latex(core.sympify(quiz.answer["formula"], evaluate=False)) + "[/$]"
     return question, answer
 
 
@@ -98,6 +99,7 @@ converters = {
 # return map with structure as a note
 def convert(quiz: Quiz):
     question, answer = converters[quiz.type](quiz)
+    question = "<center>" + question + "</center>"
     deck_name = quiz.course_name + '::' + quiz.lesson_name + '::' + quiz.section_name
     return {
         "deckName": deck_name,
