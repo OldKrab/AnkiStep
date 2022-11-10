@@ -1,8 +1,6 @@
 from stepik_api.quiz_jsons import Quiz
 from stepik_api.consts import *
 from anki_connect_module.anki_connect_sender import AnkiConnectorSender
-from sympy import core, latex
-HARD_DECK = "duck"
 
 def convert_simple_answer(quiz, type):
     question = quiz.step["block"]["text"] 
@@ -17,7 +15,7 @@ def convert_string(quiz):
 
 def convert_math(quiz):
     question = quiz.step["block"]["text"] 
-    answer = "[$]" + latex(core.sympify(quiz.answer["formula"], evaluate=False)) + "[/$]"
+    answer = "<anki-mathjax>" + quiz.answer["formula"] + "</anki-mathjax>"
     return question, answer
 
 def choice_formatter(dataset, result):
@@ -48,13 +46,21 @@ converters = {
 
 # convert step into anki with types
 # return map with structure as a note
-def convert(quiz):
+def convert(quiz: Quiz):
     question, answer = converters[quiz.type](quiz)
-    question = "<center>" + question + "</center>"
+    deck_name = quiz.course_name + '::' + quiz.section_name + '::' + quiz.lesson_name
     return {
-        "deckName": HARD_DECK,
+        "deckName": deck_name,
         "modelName": "Basic",
         "fields": {"Front": question, "Back": answer},
-        "options": {"allowDuplicate": True}
+        "options": {
+                "allowDuplicate": False,
+                "duplicateScope": "deck",
+                "duplicateScopeOptions": {
+                    "deckName": deck_name,
+                    "checkChildren": False,
+                    "checkAllModels": False
+                }
+            }
     }
 

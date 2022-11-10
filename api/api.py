@@ -22,7 +22,7 @@ class AnkiStepAPI:
 
     def save_quizes_anki(self):
         cards = [convert(q) for q in self.stepik_quizes]
-        self.anki_connect_sender.delete_decks([c['deckName'] for c in cards], True)
+        # self.anki_connect_sender.delete_decks([c['deckName'] for c in cards], True)
 
         for c in cards:
             self.anki_connect_sender.create_deck(c['deckName'])
