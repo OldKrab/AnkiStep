@@ -9,6 +9,8 @@ STEPS = STEPIK_API_URL + "/steps/"
 COURSES = STEPIK_API_URL + "/courses/"
 COURSES_PK = COURSES + "{}"
 
+USER_COURSES = STEPIK_API_URL + "/user-courses/"
+
 SECTIONS = STEPIK_API_URL + "/sections/"
 
 UNITS = STEPIK_API_URL + "/units/"

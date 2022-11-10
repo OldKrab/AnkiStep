@@ -1,3 +1,4 @@
+from email.policy import default
 import sys
 import click
 from api.api import AnkiStepAPI
@@ -51,7 +52,18 @@ def convert(course_id):
     click.echo("Converting was completed successfully!")
 
 
-        
+@cli.command()
+@click.argument('count', default=5, type=int)
+def last_courses(count):
+    """
+    Get last <count> yours courses.\n
+    Format: last_courses <count>\n
+    """
+    api = get_api()
+    try:
+        api.load_last_courses(count)
+    except ConnectionError as e:
+        error_and_exit(*e.args)
 
 
 if __name__ == "__main__":

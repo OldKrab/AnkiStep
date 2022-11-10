@@ -31,12 +31,15 @@ def parse_url_params(params: dict) -> str:
     return "?" + "&".join(map(lambda pair: "{}={}".format(pair[0], pair[1]), params.items()))
 
 
-def request_entities(user_headers, request_url, url_params: dict, field_name) -> list[dict]:
+def request_entities(user_headers, request_url, url_params: dict, field_name, count=-1) -> list[dict]:
     left_pages = True
     entities = []
     page = 1
-    while left_pages:
+    cur_count = 0
+    while left_pages and (count == -1 or len(entities) <= count):
         url_params["page"] = page
+        url_params["page_size"] = count - len(entities)
+
         json = user_request(user_headers,
                             request_url + parse_url_params(url_params)).json()
         entities += json[field_name]
@@ -131,8 +134,13 @@ def load_step_submission_and_attempt(user_headers, steps, i, course, steps_lesso
         steps[i], sub, attempt, course["title"], steps_lessons[i]["title"], steps_sections[i]["title"])
 
 
-load_step_submission_and_attempt.count = 0
-
+def load_user_courses(user_headers, count = 5) -> list[dict]:
+    courses = request_entities(user_headers, USER_COURSES, {}, "user-courses")
+    courses_ids = [course["course"] for course in courses][0:count]
+    count = len(courses_ids)
+    courses = request_entities_by_ids(user_headers, courses_ids, COURSES, "courses", False)
+    courses_index = {courses[i]["id"]:i for i in range(count)}
+    return [courses[courses_index[courses_ids[i]]] for i in range(count)]
 
 def load_quizes(user_headers, course_id) -> list[Quiz]:
     num_cores = multiprocessing.cpu_count()

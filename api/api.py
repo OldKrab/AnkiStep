@@ -1,7 +1,7 @@
 from anki_connect_module.anki_connect_sender import AnkiConnectorSender
 from quiz_converter.converter import convert
 from stepik_api.authorisation import OAuthStepik
-from stepik_api.data_loader import load_quizes
+from stepik_api.data_loader import load_quizes, load_user_courses
 
 
 class AnkiStepAPI:
@@ -22,6 +22,13 @@ class AnkiStepAPI:
 
     def load_stepik_course(self, course_id):
         self.stepik_quizes = load_quizes(self.stepic_oauth.get_headers(), course_id)
+
+    def load_last_courses(self, count):
+        print("Load your last {} courses...".format(count))
+        courses = load_user_courses(self.stepic_oauth.get_headers(), count)
+        print("Yours last {} courses (<id> - <title>):".format(len(courses)))
+        for course in courses:
+            print("{0: <6} - \"{1}\"".format(course["id"], course["title"]))
 
     def save_quizes_anki(self):
         cards = [convert(q) for q in self.stepik_quizes]
