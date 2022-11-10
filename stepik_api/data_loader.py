@@ -138,7 +138,7 @@ def load_user_courses(user_headers, count = 5) -> list[dict]:
     courses = request_entities(user_headers, USER_COURSES, {}, "user-courses")
     courses_ids = [course["course"] for course in courses][0:count]
     count = len(courses_ids)
-    courses = request_entities_by_ids(user_headers, courses_ids, COURSES, "courses", False)
+    courses = request_entities_by_ids(user_headers, courses_ids, COURSES, "courses")
     courses_index = {courses[i]["id"]:i for i in range(count)}
     return [courses[courses_index[courses_ids[i]]] for i in range(count)]
 

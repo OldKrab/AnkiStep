@@ -19,8 +19,8 @@ def convert_string(quiz):
 
 
 def convert_math(quiz):
-    question = quiz.step["block"]["text"]
-    answer = "<anki-mathjax>" + latex(core.sympify(quiz.answer["formula"], evaluate=False)) + "</anki-mathjax>"
+    question = quiz.step["block"]["text"] 
+    answer = "[$]" + latex(core.sympify(quiz.answer["formula"], evaluate=False))  + "[/$]"
     return question, answer
 
 
@@ -41,13 +41,8 @@ def choice_formatter(dataset, result):
 
 def convert_choice(quiz: Quiz):
     options, answer = choice_formatter(quiz.attempt['dataset'], quiz.answer['choices'])
-    question = quiz.step["block"]["text"] + "<br>" + options
+    question = quiz.step["block"]["text"] + "<br>" + options 
     return question, answer
-
-
-def convert_fill_blanks(quiz: Quiz):
-    a = quiz
-    return "q", "a"
 
 
 def make_html_row(key, value):
@@ -78,7 +73,6 @@ def convert_matching(quiz: Quiz):
     a += "</table>"
 
     return q, a
-
 
 def convert_sorting(quiz: Quiz):
     q = quiz.step["block"]["text"] + '\n'
@@ -139,7 +133,7 @@ converters = {
     TYPE_STRING: convert_string,
     TYPE_CHOICE: convert_choice,
     TYPE_MATH: convert_math,
-    TYPE_MATCHING: convert_matching,
+    TYPE_MATCHING: convert_matching, 
     TYPE_RANDOM_TASKS: convert_random,
     TYPE_FILL_BLANKS: convert_fill_blanks,
     TYPE_SORTING: convert_sorting,
