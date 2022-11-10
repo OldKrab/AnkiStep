@@ -100,6 +100,7 @@ converters = {
 def convert(quiz: Quiz):
     question, answer = converters[quiz.type](quiz)
     question = "<center>" + question + "</center>"
+    answer = "<center>" + answer + "</center>"
     deck_name = quiz.course_name + '::' + quiz.lesson_name + '::' + quiz.section_name
     return {
         "deckName": deck_name,
