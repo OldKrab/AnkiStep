@@ -1,37 +1,58 @@
-import argparse
+import sys
+import click
 from api.api import AnkiStepAPI
 
-def main(args):
-    api = AnkiStepAPI()
-    if (
-        args.login is None
-        and args.password is not None
-        or args.login is not None
-        and args.password is None
-    ):
-        print("You need to enter login and password.")
-        return
+def get_api():
+    try:
+        return AnkiStepAPI()
+    except Exception:
+        click.secho("Check Anki is running with AnkiConnect plugin!", fg="red", bold=True, err=True)
+        sys.exit(1)
 
-    api.authorize(args.client_id, args.client_secret, args.login, args.password)
-    api.load_stepik_course(int(args.quiz_id))
+def error_and_exit(mes):
+    click.secho(mes, fg="red", bold=True, err=True)
+    sys.exit(1)
+
+@click.group()
+def cli():
+    pass
+
+
+@cli.command()
+@click.argument('client_id')
+@click.argument('client_secret')
+def auth(client_id, client_secret):
+    """
+    Authorize in Stepik with given client credentials.\n
+    Format: auth <client_id> <client_secret>\n
+    """
+
+    api = get_api()
+    try:
+        api.authorize(client_id, client_secret)
+    except ConnectionError as e:
+        error_and_exit(*e.args)
+    click.echo("You successfully authorize!")
+
+@cli.command()
+@click.argument('course_id')
+def convert(course_id):
+    """
+    Convert course to Anki notes.\n
+    Format: convert <course_id>\n
+    """
+    api = get_api()
+    try:
+        api.load_stepik_course(course_id)
+    except ConnectionError as e:
+        error_and_exit(*e.args)
+    click.echo("Save course to Anki...")
     api.save_quizes_anki()
+    click.echo("Converting was completed successfully!")
+
+
+        
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Argument parser")
-    parser.add_argument(
-        "-i", "--client_id", help="Client id of your application", required=True
-    )
-    parser.add_argument(
-        "-s", "--client_secret", help="Client secret of your application", required=True
-    )
-    parser.add_argument(
-        "-q", "--quiz_id", help="Id of Stepik's course to import", required=True
-    )
-    parser.add_argument("-l", "--login", help="Your Stepik's login", required=False)
-    parser.add_argument(
-        "-p", "--password", help="Your Stepik's password", required=False
-    )
-    args = parser.parse_args()
-
-    main(args)
+    cli()

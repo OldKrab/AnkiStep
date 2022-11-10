@@ -20,8 +20,11 @@ def user_request(user_headers, request_url: str):
     return requests.get(request_url, headers=user_headers)
 
 
-def request_entity(user_headers, request_url: str, id: int):
-    return user_request(user_headers, request_url.format(id)).json()
+def request_entity(user_headers, request_url: str, id: int, fields_name: str):
+    json: dict = user_request(user_headers, request_url.format(id)).json()
+    if fields_name not in json.keys():
+        raise Exception()
+    return json[fields_name][0]
 
 
 def parse_url_params(params: dict) -> str:
@@ -55,11 +58,14 @@ def request_entities_by_ids(user_headers, ids, request_url, field_name):
 
 
 def request_course(user_headers, course_id: int):
-    return request_entity(user_headers, COURSES_PK, course_id)["courses"][0]
+    try:
+        return request_entity(user_headers, COURSES_PK, course_id, "courses")
+    except Exception:
+        raise ConnectionError("Can't load course with id {}".format(course_id))
 
 
 def request_attempt(user_headers, attempt_id: int):
-    return request_entity(user_headers, ATTEMPTS_PK, attempt_id)["attempts"][0]
+    return request_entity(user_headers, ATTEMPTS_PK, attempt_id, "attempts")
 
 
 def request_correct_submission(user_headers, step_id: int) -> dict | None:
@@ -78,29 +84,24 @@ def filter_supported_steps(steps: list[dict]) -> list[dict]:
 def load_course_sections(user_headers, course: dict) -> list[dict]:
     sections = request_entities_by_ids(user_headers,
                                        course["sections"], SECTIONS, "sections")
-    print("sections of course loaded")
     return sections
 
 
 def load_course_units(user_headers, course_id: int) -> list[dict]:
     units = request_entities(user_headers, UNITS, {
                              "course": course_id}, "units")
-    print("units of course loaded")
     return units
 
 
 def load_course_lessons(user_headers, course_id: int) -> list[dict]:
     lessons = request_entities(user_headers,
                                LESSONS, {"course": course_id}, "lessons")
-    print("lessons of course loaded")
-
     return lessons
 
 
 def load_course(user_headers, course_id: int) -> dict:
-    print('load course with id {}'.format(course_id))
+    print('load course with id {}...'.format(course_id))
     course = request_course(user_headers, course_id)
-    print('course loaded')
     return course
 
 
@@ -109,14 +110,14 @@ def load_lessons_steps(user_headers, lessons: list[dict]) -> list[dict]:
     steps_ids = [
         step_id for lesson in lessons for step_id in lesson["steps"]]
     steps = request_entities_by_ids(user_headers, steps_ids, STEPS, "steps")
-    print("steps of lessons loaded")
     return steps
 
 
 def load_step_submission_and_attempt(user_headers, steps, i, course, steps_lessons, steps_sections, loaded_steps_count):
     def increase_progress_bar():
         loaded_steps_count[0] += 1
-        printProgressBar(loaded_steps_count[0] / len(steps), prefix="load steps submissions:", suffix="Complete")
+        printProgressBar(loaded_steps_count[0] / len(steps),
+                         prefix="load steps submissions:", suffix="Complete")
 
     step_id = steps[i]["id"]
     sub = request_correct_submission(user_headers, step_id)
@@ -137,6 +138,7 @@ def load_quizes(user_headers, course_id) -> list[Quiz]:
     num_cores = multiprocessing.cpu_count()
     course = load_course(user_headers, course_id)
 
+    print("load sections, units and lessons of course \"{}\"...".format(course["title"]))
     sections, units, lessons = Parallel(n_jobs=3)((
         delayed(load_course_sections)(user_headers, course),
         delayed(load_course_units)(user_headers, course_id),
@@ -171,7 +173,7 @@ def load_quizes(user_headers, course_id) -> list[Quiz]:
         delayed(load_step_submission_and_attempt)(
             user_headers, steps, i, course, steps_lessons, steps_sections, loaded_steps_count)
         for i in range(len(steps)))
-    print("\nsteps submissions loaded")
+    print()
 
     quizes = filter(lambda o: o is not None, quizes)
     return list(quizes)
